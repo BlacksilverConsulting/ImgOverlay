@@ -8,6 +8,7 @@
     appgroupname: imaging
     powertoolsreponame: CentOSStreamPowerTools
     ansible_python_interpreter: /usr/bin/python3.6
+    overlay: https://github.com/BlacksilverConsulting/ImgOverlay/raw/main/var/imaging/resources/packages
 
   handlers:
   - name: Restart FTP server
@@ -47,6 +48,7 @@
     - 'scanner:$6$mysecretsalt$72YAmKvuS9HRllA6nWWV4JR.D54TrkIMrv3y3zZzdwHDg2ndAZu9z2veyGJgsl8op/CmzPRJEndLRVkWSzdSO.'
     - 'templates:$6$mysecretsalt$6TRIJ6gQhES4dFSHvGfzF0aDTW21Y6lVs.pHnT.rx9OZr8kVmADRwreqPxfFtVJR5z8HkGmJUN.60blLWXanR/'
 
+  # THIS IS SUS! HAS POSTGRESQL EVEN BEEN STARTED YET?
   - name: Create application-specific PostgreSQL users
     community.postgresql.postgresql_user:
       name: "{{ item }}"
@@ -276,21 +278,21 @@
     unarchive:
       dest:       /var/www/html
       creates:    /var/www/html/apf_3.02_sdk
-      src:        https://github.com/BlacksilverConsulting/OS8/raw/main/apf_3.02_sdk.zip
+      src:        "{{ overlay }}/apf_3.02_sdk.zip"
       remote_src: yes
 
   - name: Install APF Skins
     unarchive:
       dest:       /var/www/html
       creates:    /var/www/html/apf_skin
-      src:        https://github.com/BlacksilverConsulting/OS8/raw/main/apf_skin.zip
+      src:        "{{ overlay }}/apf_skin.zip"
       remote_src: yes
 
   - name: Install YUI
     unarchive:
       dest:       /var/www/html
       creates:    /var/www/html/yui
-      src:        https://github.com/BlacksilverConsulting/OS8/raw/main/yui-2.9.0.tgz
+      src:        "{{ overlay }}/yui-2.9.0.tgz"
       remote_src: yes
 
 ...

@@ -33,7 +33,7 @@
 
   - name: Configure PostgreSQL CLI
     get_url:
-      url: https://github.com/BlacksilverConsulting/OS9/raw/main/psqlrc
+      url: https://github.com/BlacksilverConsulting/ImgOverlay/raw/main/var/imaging/resources/configs/psqlrc
       dest: /etc/sysconfig/pgsql/psqlrc
       mode: 0644
       group: root
