@@ -1,0 +1,83 @@
+---
+- name: Core congfiguration for CentOS 8+
+  hosts: localhost
+  remote_user: root
+
+  vars:
+    unprivuser: support
+
+  tasks:
+  - name: Workaround libstoragemgmt dependency
+    yum:
+      name:
+      - 'libstoragemgmt'
+      state: latest
+
+  - name: Install environment package groups
+    yum:
+      name:
+      - "@server-product-environment"
+      state: present
+
+  - name: Install regular package groups
+    yum:
+      name:
+      - "@development"
+      - "@headless-management"
+      state:  present
+
+  - name: Install individual packages
+    yum:
+      name:
+      - 'autofs'
+      - 'bind-utils'
+      - 'htop'
+      - 'lftp'
+      - 'lsof'
+      - 'openssh-server'
+      - 'python3-firewall'
+      - 'python3-lxml'
+      - 'python3-psycopg2'
+      - 'sudo'
+      - 'tmpwatch'
+
+  - name: Start autofs service with OS
+    service:
+      name: autofs
+      enabled: yes
+      state: started
+
+  - name: Configure lftp
+    lineinfile:
+      path: /etc/lftp.conf
+      create: yes
+      owner: root
+      group: root
+      mode: "0644"
+      line: "{{ item }}"
+    loop:
+    - "set ftp:ssl-force false"
+    - "set ftp:ssl-protect-data true"
+    - "set ssl:verify-certificate no"
+
+  - name: Create unpriviledged account
+    user:
+      name: "{{unprivuser}}"
+
+  - name: Configure authorized_keys for unpriviledged account
+    get_url:
+      url: https://blacksilverconsulting.github.io/OS9/authorized_keys
+      owner: "{{unprivuser}}"
+      group: "{{unprivuser}}"
+      mode: "0600"
+      dest: "/home/{{unprivuser}}/.ssh"
+
+  - name: Disable SELinux
+    ini_file:
+      path: /etc/selinux/config
+      section: null
+      option: SELINUX
+      value: disabled
+      no_extra_spaces: yes
+
+...

@@ -1,0 +1,12 @@
+[Unit]
+Description=Imaging Cleanup Service
+After=postgresql.service
+
+[Service]
+Type=simple
+User=listener
+ExecStart=/var/imaging/bin/imaging-cleanup.sh
+Restart=no
+
+[Install]
+WantedBy=multi-user.target

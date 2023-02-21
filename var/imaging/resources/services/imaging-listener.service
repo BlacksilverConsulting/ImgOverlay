@@ -1,0 +1,13 @@
+[Unit]
+Description=Imaging Listener Service
+After=postgresql.service
+
+[Service]
+Type=simple
+User=listener
+ExecStart=/usr/bin/perl /usr/bin/img-listener.pl
+Restart=always
+RestartSec=1s
+
+[Install]
+WantedBy=multi-user.target
