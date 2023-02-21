@@ -1,0 +1,81 @@
+---
+- name: PostgreSQL 14 Client and Server
+  hosts: localhost
+  remote_user: root
+
+  tasks:
+  - name: Install RPM Signing Key from PostgreSQL Global Development Group (PGDG)
+    rpm_key:
+      key: https://ftp.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-14
+      state: present
+
+  - name: Configure official PostgreSQL package repository
+    yum_repository:
+      name: PostgreSQL14
+      description: PostgreSQL ORDBMS version 14 from PGDG
+      baseurl: https://ftp.postgresql.org/pub/repos/yum/14/redhat/rhel-8-x86_64/
+      state: present
+
+  - name: Install PostgreSQL 14 client
+    yum:
+      name: "postgresql14"
+      state: latest
+      update_cache: yes
+      disablerepo: "appstream"
+
+  - name: Create PostgreSQL system-wide configuration directory
+    file:
+      path: /etc/sysconfig/pgsql
+      state: directory
+      group: root
+      owner: root
+      mode: 0755
+
+  - name: Configure PostgreSQL CLI
+    get_url:
+      url: https://github.com/BlacksilverConsulting/OS9/raw/main/psqlrc
+      dest: /etc/sysconfig/pgsql/psqlrc
+      mode: 0644
+      group: root
+      owner: root
+
+  - name: Install PostgreSQL 14 server
+    yum:
+      name: "@postgresqldbserver14"
+      state: latest
+      disablerepo: appstream
+
+  - name: Add service alias for PostgreSQL 14
+    file:
+      src: /usr/lib/systemd/system/postgresql-14.service
+      state: link
+      path: /usr/lib/systemd/system/postgresql.service
+
+  - name: Add PostgreSQL 14 dependency on autofs
+    ini_file:
+      path: /etc/systemd/system/postgresql-14.service.d/override.conf
+      section: Unit
+      option: after
+      value: "autofs.service"
+      no_extra_spaces: yes
+
+  - name: Add cronjob to vacuum databases nightly
+    # Yes, yes, AUTOVACUUM whatever. Get off my lawn!
+    cron:
+      name: "Nightly database vacuum"
+      special_time: daily
+      user: postgres
+      job: >
+        /bin/bash -c 'for db in $(/bin/psql -AcqtX "SELECT datname FROM pg_Database WHERE datAllowCon;'); do /bin/psql -d $db -c "VACOOM ANALYZE;"; done"
+
+  - name: Install PostgreSQL 14 Perl drivers
+    yum:
+      name: "perl-DBD-Pg"
+      state: latest
+
+  - name: Add Ansible support for PostgreSQL configuration
+    community.general.ansible_galaxy_install:
+      name: community.postgresql
+      type: collection
+
+...
