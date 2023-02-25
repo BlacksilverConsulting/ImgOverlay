@@ -4,6 +4,9 @@
   remote_user: root
 
   tasks:
+  # We use PGDG here even though CentOS 9 has PostgreSQL 14,
+  #  because this way works on CentOS 8 and 9.
+
   - name: Install RPM Signing Key from PostgreSQL Global Development Group (PGDG)
     rpm_key:
       key: https://ftp.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG-14
@@ -23,7 +26,9 @@
       update_cache: yes
       disablerepo: "appstream"
 
-  - name: Create PostgreSQL system-wide configuration directory
+  - name: Create PostgreSQL client system-wide configuration directory
+    # This is needed for the CLI configuration file that is 
+    #  about to be installed
     file:
       path: /etc/sysconfig/pgsql
       state: directory
@@ -31,7 +36,9 @@
       owner: root
       mode: 0755
 
-  - name: Configure PostgreSQL CLI
+  - name: Configure PostgreSQL client CLI
+    # This makes psql much nicer to work with, things like
+    #  persistent history and a special symbol (¤) for nulls
     get_url:
       url: https://github.com/BlacksilverConsulting/ImgOverlay/raw/main/var/imaging/resources/configs/psqlrc
       dest: /etc/sysconfig/pgsql/psqlrc
@@ -45,13 +52,9 @@
       state: latest
       disablerepo: appstream
 
-  - name: Add service alias for PostgreSQL 14
-    file:
-      src: /usr/lib/systemd/system/postgresql-14.service
-      state: link
-      path: /usr/lib/systemd/system/postgresql.service
-
-  - name: Add PostgreSQL 14 dependency on autofs
+  - name: Add PostgreSQL 14 service dependency on autofs
+    # This is needed for configurations where the DB cluster
+    #  is on a disk that is mounted by autofs
     ini_file:
       path: /etc/systemd/system/postgresql-14.service.d/override.conf
       section: Unit
@@ -59,23 +62,36 @@
       value: "autofs.service"
       no_extra_spaces: yes
 
-  - name: Add cronjob to vacuum databases nightly
-    # Yes, yes, AUTOVACUUM whatever. Get off my lawn!
+  - name: Add cronjob to vacuum databases regularly
+    # This is needed to comfort grumpy old DBAs that don't 
+    #  trust autovacuum yet
     cron:
       name: "Nightly database vacuum"
       special_time: daily
       user: postgres
       job: >
-        /bin/bash -c 'for db in $(/bin/psql -AcqtX "SELECT datname FROM pg_Database WHERE datAllowCon;'); do /bin/psql -d $db -c "VACOOM ANALYZE;"; done"
-
-  - name: Install PostgreSQL 14 Perl drivers
-    yum:
-      name: "perl-DBD-Pg"
-      state: latest
+        /bin/bash -c 'for db in $(/bin/psql -AqtX -U postgres -d postgres -c "SELECT datname FROM pg_Database WHERE datAllowConn;"); do /bin/psql -q -d $db -c "VACUUM ANALYZE;"; done'
 
   - name: Add Ansible support for PostgreSQL configuration
+    # This is needed for dm.yaml to create application-specific
+    #  database users
     community.general.ansible_galaxy_install:
       name: community.postgresql
       type: collection
+
+  - name: Check if PostgreSQL cluster is initialized
+    ansible.builtin.stat:
+      path: /var/lib/pgsql/14/data/pg_hba.conf
+    register: postgres_data
+
+  - name: Initialize PostgreSQL cluster
+    shell: "postgresql-setup initdb"
+    when: not postgres_data.stat.exists
+ 
+  - name: Start and enable PostgreSQL service
+    service: 
+      name: postgresql-14 
+      state: started 
+      enabled: yes
 
 ...

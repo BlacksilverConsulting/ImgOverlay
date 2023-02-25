@@ -8,7 +8,7 @@
     appgroupname: imaging
     powertoolsreponame: CentOSStreamPowerTools
     ansible_python_interpreter: /usr/bin/python3.6
-    overlay: https://github.com/BlacksilverConsulting/ImgOverlay/raw/main/var/imaging/resources/packages
+    overlay: https://github.com/BlacksilverConsulting/ImgOverlay/raw/main/var/imaging/resources
 
   handlers:
   - name: Restart FTP server
@@ -48,10 +48,11 @@
     - 'scanner:$6$mysecretsalt$72YAmKvuS9HRllA6nWWV4JR.D54TrkIMrv3y3zZzdwHDg2ndAZu9z2veyGJgsl8op/CmzPRJEndLRVkWSzdSO.'
     - 'templates:$6$mysecretsalt$6TRIJ6gQhES4dFSHvGfzF0aDTW21Y6lVs.pHnT.rx9OZr8kVmADRwreqPxfFtVJR5z8HkGmJUN.60blLWXanR/'
 
-  # THIS IS SUS! HAS POSTGRESQL EVEN BEEN STARTED YET?
+# BEGIN POSTGRESQL SECTION
   - name: Create application-specific PostgreSQL users
     community.postgresql.postgresql_user:
       name: "{{ item }}"
+      # We intentionally do not specify a password here
     loop:
     - 'dbmaint'
     - 'apache'
@@ -61,6 +62,31 @@
     - 'mailer'
     become: yes
     become_user: postgres
+
+  - name: Add systemd service alias for PostgreSQL 14
+    # This is needed for application-specific automation
+    #  that expects `service postgresql stop` to work
+    file:
+      src: /usr/lib/systemd/system/postgresql-14.service
+      state: link
+      path: /usr/lib/systemd/system/postgresql.service
+
+  - name: Create /var/lib/pgsql/data symlink
+    # This is needed for sysupdate.pl to complete
+    file:
+      state: link
+      src: /var/lib/pgsql/14/data
+      path: /var/lib/pgsql/data
+
+  - name: Create fake init.d file
+    # This is required for 2005091601 to work correctly.
+    file:
+      path: /etc/rc.d/init.d/postgresql
+      state: touch
+      modification_time: preserve
+      access_time: preserve
+
+# END POSTGRESQL SECTION
 
   - name: Create /etc/mail directory
     file:
@@ -126,6 +152,7 @@
       - 'perl-String-ShellQuote'
       - 'perl-CGI'
       - 'perl-Parse-RecDescent'
+      - 'perl-DBD-Pg'
       - 'foomatic'
       - 'freetds'
       - 'freetds-devel'
@@ -201,6 +228,8 @@
       value: read
       pretty_print: yes
 
+# BEGIN POWERTOOLS SECTION
+
   - name: Install RPM signing key for PowerTools
     rpm_key:
       key: http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-Official
@@ -236,13 +265,8 @@
       state: latest
       enablerepo: "{{ powertoolsreponame }}"
 
-  - name: Create fake init.d file
-    # This is required for 2005091601 to work correctly.
-    file:
-      path: /etc/rc.d/init.d/postgresql
-      state: touch
-      modification_time: preserve
-      access_time: preserve
+# END POSTGRESQL SECTION
+
 
   - name: install cpan modules
     cpanm:
@@ -278,21 +302,47 @@
     unarchive:
       dest:       /var/www/html
       creates:    /var/www/html/apf_3.02_sdk
-      src:        "{{ overlay }}/apf_3.02_sdk.zip"
+      src:        "{{ overlay }}/packages/apf_3.02_sdk.zip"
       remote_src: yes
 
   - name: Install APF Skins
     unarchive:
       dest:       /var/www/html
       creates:    /var/www/html/apf_skin
-      src:        "{{ overlay }}/apf_skin.zip"
+      src:        "{{ overlay }}/packages/apf_skin.zip"
       remote_src: yes
 
   - name: Install YUI
     unarchive:
       dest:       /var/www/html
       creates:    /var/www/html/yui
-      src:        "{{ overlay }}/yui-2.9.0.tgz"
+      src:        "{{ overlay }}/packages/yui-2.9.0.tgz"
       remote_src: yes
+
+  - name: Install imaging-listener service definition
+    get_url:
+      url: "{{ overlay }}/services/imaging-listener.service"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+      dest: "/usr/lib/systemd/system"
+
+  - name: Enable imaging-listener service
+    service:
+      name: imaging-listener
+      enabled: yes
+
+  - name: Install imaging-cleanup service definition
+    get_url:
+      url: "{{ overlay }}/services/imaging-cleanup.service"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+      dest: "/usr/lib/systemd/system"
+
+  - name: Enable imaging-cleanup service
+    service:
+      name: imaging-cleanup
+      enabled: yes
 
 ...
