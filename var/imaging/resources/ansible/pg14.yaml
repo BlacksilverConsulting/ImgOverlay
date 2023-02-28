@@ -3,7 +3,9 @@
   hosts: localhost
   remote_user: root
 
-  tasks:
+# It would be nice if "14" was coming from a variable.
+
+ tasks:
   # We use PGDG here even though CentOS 9 has PostgreSQL 14,
   #  because this way works on CentOS 8 and 9.
 
@@ -39,6 +41,8 @@
   - name: Configure PostgreSQL client CLI
     # This makes psql much nicer to work with, things like
     #  persistent history and a special symbol (¤) for nulls
+    # This pulls directly from GitHub instead of expecting /root/ImgOverlay-main
+    #  to already exist, so this playbook is not dependent on dm.yaml.
     get_url:
       url: https://github.com/BlacksilverConsulting/ImgOverlay/raw/main/var/imaging/resources/configs/psqlrc
       dest: /etc/sysconfig/pgsql/psqlrc
@@ -72,6 +76,12 @@
       job: >
         /bin/bash -c 'for db in $(/bin/psql -AqtX -U postgres -d postgres -c "SELECT datname FROM pg_Database WHERE datAllowConn;"); do /bin/psql -q -d $db -c "VACUUM ANALYZE;"; done'
 
+  - name: Install Python module for PostgreSQL
+    # This is needed for community.postgresql to work
+    yum:
+      name: "python3-psycopg2"
+      state: latest
+
   - name: Add Ansible support for PostgreSQL configuration
     # This is needed for dm.yaml to create application-specific
     #  database users
@@ -82,11 +92,11 @@
   - name: Check if PostgreSQL cluster is initialized
     ansible.builtin.stat:
       path: /var/lib/pgsql/14/data/pg_hba.conf
-    register: postgres_data
+    register: pg14data
 
   - name: Initialize PostgreSQL cluster
-    shell: "postgresql-setup initdb"
-    when: not postgres_data.stat.exists
+    shell: "postgresql-14-setup initdb"
+    when: not pg14data.stat.exists
  
   - name: Start and enable PostgreSQL service
     service: 
