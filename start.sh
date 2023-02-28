@@ -21,28 +21,28 @@ set -o errexit
 
 OVERLAY=https://github.com/BlacksilverConsulting/ImgOverlay/raw/main
 
-echo Enable EPEL
+echo 'Enable EPEL'
 dnf -y install epel-release epel-next-release
 
-echo Install Ansible and dependencies 
+echo 'Install Ansible and dependencies'
 # can't be combined with EPEL because Ansible is coming from EPEL
 dnf -y install python3 python3-rpm python3-pycurl sshpass ansible-core \
 ansible-collection-ansible-posix ansible-collection-community-general \
 ansible-collection-redhat-rhel_mgmt 
 
-echo Download the playbooks to current directory
+echo 'Download the playbooks to current directory'
 curl -LJO $OVERLAY/var/imaging/resources/ansible/base.yaml
 curl -LJO $OVERLAY/var/imaging/resources/ansible/pg14.yaml
 curl -LJO $OVERLAY/var/imaging/resources/ansible/dm.yaml
 
-echo Run the base playbook
+echo 'Run the base playbook'
 ansible-playbook ./base.yaml
 
-echo Initial configuration complete.
+echo 'Initial configuration complete.'
 
-echo To install PostgreSQL 14 Server and Client:
+echo 'To install PostgreSQL 14 server and client:'
 echo 'ansible-playbook ./pg14.yaml'
 
-echo To install other components useful for document management:
-echo (assumes PostgreSQL is already installed)
+echo 'To install other components useful for document management:'
+echo '(assumes PostgreSQL is already installed)'
 echo 'ansible-playbook ./dm.yaml'
