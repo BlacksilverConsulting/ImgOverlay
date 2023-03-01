@@ -362,8 +362,8 @@
   - name: Install our built packages from the overlay
     yum:
       name:
-        "{{overlay_rpms}}/a2ps-4.14-23.el8.x86_64.rpm"
-        "{{overlay_rpms}}/groff-base-1.22.3-18.el8.x86_64.rpm"
-        "{{overlay_rpms}}/groff-perl-1.22.3-18.el8.x86_64.rpm"
+      - "{{overlay_rpms}}/a2ps-4.14-23.el8.x86_64.rpm"
+      - "{{overlay_rpms}}/groff-base-1.22.3-18.el8.x86_64.rpm"
+      - "{{overlay_rpms}}/groff-perl-1.22.3-18.el8.x86_64.rpm"
       state: present
 ...
