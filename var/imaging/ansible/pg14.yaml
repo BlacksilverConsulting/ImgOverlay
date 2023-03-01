@@ -5,7 +5,7 @@
 
 # It would be nice if "14" was coming from a variable.
 
- tasks:
+  tasks:
   # We use PGDG here even though CentOS 9 has PostgreSQL 14,
   #  because this way works on CentOS 8 and 9.
 
@@ -18,7 +18,7 @@
     yum_repository:
       name: PostgreSQL14
       description: PostgreSQL ORDBMS version 14 from PGDG
-      baseurl: https://ftp.postgresql.org/pub/repos/yum/14/redhat/rhel-8-x86_64/
+      baseurl: "https://ftp.postgresql.org/pub/repos/yum/14/redhat/rhel-{{ansible_distribution_major_version}}-x86_64/"
       state: present
 
   - name: Install PostgreSQL 14 client

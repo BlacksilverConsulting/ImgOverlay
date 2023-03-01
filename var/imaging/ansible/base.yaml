@@ -80,4 +80,19 @@
       value: disabled
       no_extra_spaces: yes
 
+# CentOS 8 has python3-psycopg2 bound to python 3.6, even though the default is 3.9
+# CentOS 9 has python3-psycopg2 bound to python 3.9, even though the default is 3.11
+# dm.yaml needs psycopg2, and was setting ansible_python_interpreter
+# but it can't set the version dynamically.
+# So we will set it here, because base.yaml doesn't need it set
+# If a future version needs yet another mapping, that is a problem for another day.
+
+  - name: Set Default Ansible Python Interpreter
+    ini_file:
+      path: /etc/ansible/ansible.cfg
+      section: defaults
+      option: INTERPRETER_PYTHON
+      value: "/usr/bin/python{{ '3.6' if ansible_distribution_major_version == '8' else '3.9' }}"
+      no_extra_spaces: yes
+
 ...
