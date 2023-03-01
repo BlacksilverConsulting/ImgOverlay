@@ -7,9 +7,6 @@
   vars:
     appgroupname: imaging
     powertoolsreponame: CentOSStreamPowerTools
-    # This vvv only works for CentOS/RHEL 8 and 9, sorry.
-    python_ver: "{{ '3.6' if ansible_distribution_major_version == '8' else '3.9' }}"
-    ansible_python_interpreter: "/usr/bin/python{{python_ver}}"
     overlay: /root/ImgOverlay-main/var/imaging/resources
     overlay_rpms: "{{overlay}}/RPM/CentOS-{{ansible_distribution_major_version}}"
 
