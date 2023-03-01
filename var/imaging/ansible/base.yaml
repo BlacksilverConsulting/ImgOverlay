@@ -91,7 +91,7 @@
     ini_file:
       path: /etc/ansible/ansible.cfg
       section: defaults
-      option: INTERPRETER_PYTHON
+      option: interpreter_python
       value: "/usr/bin/python{{ '3.6' if ansible_distribution_major_version == '8' else '3.9' }}"
       no_extra_spaces: yes
 
