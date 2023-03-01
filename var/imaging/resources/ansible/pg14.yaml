@@ -5,7 +5,7 @@
 
 # It would be nice if "14" was coming from a variable.
 
- tasks:
+  tasks:
   # We use PGDG here even though CentOS 9 has PostgreSQL 14,
   #  because this way works on CentOS 8 and 9.
 
