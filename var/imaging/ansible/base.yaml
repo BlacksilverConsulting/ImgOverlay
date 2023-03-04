@@ -86,22 +86,4 @@
 # but it can't set the version dynamically.
 # So we will set it here, because base.yaml doesn't need it set
 
-  - name: Set Default Ansible Python Interpreter for CentOS 8
-    ini_file:
-      path: /etc/ansible/ansible.cfg
-      section: defaults
-      option: interpreter_python
-      value: "/usr/bin/python3.6"
-      no_extra_spaces: yes
-    when: "ansible_distribution_major_version == '8'"
-
-  - name: Set Default Ansible Python Interpreter for CentOS 9
-    ini_file:
-      path: /etc/ansible/ansible.cfg
-      section: defaults
-      option: interpreter_python
-      value: "/usr/bin/python3.9"
-      no_extra_spaces: yes
-    when: "ansible_distribution_major_version == '9'"
-
 ...
