@@ -76,11 +76,19 @@
       job: >
         /bin/bash -c 'for db in $(/bin/psql -AqtX -U postgres -d postgres -c "SELECT datname FROM pg_Database WHERE datAllowConn;"); do /bin/psql -q -d $db -c "VACUUM ANALYZE;"; done'
 
-  - name: Install Python module for PostgreSQL
+  - name: Install Python 3.9 module for PostgreSQL
     # This is needed for community.postgresql to work
     yum:
-      name: "python3-psycopg2"
+      name: "python39-psycopg2"
       state: latest
+    when: "ansible_distribution_major_version == '8'"
+    
+  - name: Install Python 3.11 module for PostgreSQL
+    # This is needed for community.postgresql to work
+    yum:
+      name: "python3.11-psycopg2"
+      state: latest
+    when: "ansible_distribution_major_version == '9'"
 
   - name: Add Ansible support for PostgreSQL configuration
     # This is needed for dm.yaml to create application-specific
