@@ -93,7 +93,7 @@
       option: interpreter_python
       value: "/usr/bin/python3.6"
       no_extra_spaces: yes
-    when: "{{ ansible_distribution_major_version == '8' }}"
+    when: "ansible_distribution_major_version == '8'"
 
   - name: Set Default Ansible Python Interpreter for CentOS 9
     ini_file:
@@ -102,6 +102,6 @@
       option: interpreter_python
       value: "/usr/bin/python3.9"
       no_extra_spaces: yes
-    when: "{{ ansible_distribution_major_version == '9' }}"
+    when: "ansible_distribution_major_version == '9'"
 
 ...
