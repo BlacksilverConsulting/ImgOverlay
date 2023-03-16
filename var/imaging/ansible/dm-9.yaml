@@ -1,0 +1,233 @@
+  tasks:
+  - name: Create application group
+    group:
+      name: "{{ appgroupname }}"
+      state: present
+
+  - name: Create application users
+    user:
+      name: "{{ item }}"
+      group: "{{ appgroupname }}"
+    loop:
+    - listener
+    - dbmaint
+    - mailer
+  
+  - name: Create application FTP accounts
+    user:
+      name: "{{ item.split(':')[0] }}"
+      group: "{{ appgroupname }}"
+      password: "{{ item.split(':')[1] }}"
+      update_password: always
+    loop:
+    - 'barcode:$6$mysecretsalt$B1Sq0CjQnI4Y5M.ii2x7kI88/ERDXVyH1Z6JLenQaav7u6qDDnMjZexpCId77bC0SxjyUk1KqYf9sGXRttc4g.'
+    - 'inqueue:$6$mysecretsalt$h9Qe0SkCC9h4tcMSRMRNqij7QsMP0o6jQn4JvlOdQJLK6fULfK1GgCkpd1CmER13aDwEgpqrA04s0/rr17Krh/'
+    - 'invoice:$6$mysecretsalt$Qc.Fz0ZYIfSjCd.TO00BXXCZkGFOPgpCsl3c2nM7KPKi9yPzQT62.VhCpWPot/TQS7C3tDIHHCAxS54o24e0F/'
+    - 'pages:$6$mysecretsalt$XV230BH4czvgKn8KcSW0wWUJVxinBqAbAi2XBTiJTTk5FjVv8ItZ4w9EMRmLdNfoGNzWdHugqPYB.gJYvv5iP.'
+    - 'peoplenet:$6$mysecretsalt$mJ8RHipTJVhNyEmCexor4HTxNrcimKwOlCo8qpuX5UDe9HryH7qf10rvz1z5tLWulk8HS04/ROdPNxWpDUiK0.'
+    - 'qc:$6$mysecretsalt$mJ8RHipTJVhNyEmCexor4HTxNrcimKwOlCo8qpuX5UDe9HryH7qf10rvz1z5tLWulk8HS04/ROdPNxWpDUiK0.'
+    - 'scanner:$6$mysecretsalt$72YAmKvuS9HRllA6nWWV4JR.D54TrkIMrv3y3zZzdwHDg2ndAZu9z2veyGJgsl8op/CmzPRJEndLRVkWSzdSO.'
+    - 'templates:$6$mysecretsalt$6TRIJ6gQhES4dFSHvGfzF0aDTW21Y6lVs.pHnT.rx9OZr8kVmADRwreqPxfFtVJR5z8HkGmJUN.60blLWXanR/'
+
+  - name: Create /etc/mail directory
+    file:
+      path: /etc/mail
+      state: directory
+      owner: mail
+      group: mail
+
+  - name: Add 'listener' to sendmail trusted users
+    lineinfile:
+      path: /etc/mail/trusted-users
+      create: yes
+      owner: mail
+      group: mail
+      line: 'listener'
+
+  - name: Provide /etc/init.d for applications that reuiqre it
+    file:
+      state: link
+      src: /etc/rc.d/init.d
+      path: /etc/init.d
+
+  - name: Install required groups
+    yum:
+      name:
+      - "@smb-server"
+      - "@web-server"
+      state: present
+
+  - name: Install additional packages
+    yum:
+      state: latest
+      name:
+      - 'expat'
+      - 'expat-devel'
+      - 'ncftp'
+      - 'ncurses-devel'
+      - 'openssl-devel'
+      - 'zlib-devel'
+      - 'sendmail'
+      - 'sendmail-cf'
+      - 'vsftpd'
+      - 'foomatic-db'
+      - 'ImageMagick-perl'
+      - 'ImageMagick'
+      - 'samba'
+      - 'samba-client'
+      - 'cifs-utils'
+      - 'httpd'
+      - 'perl-App-cpanminus'
+      - 'perl-IO-CaptureOutput'
+      - 'perl-URI-Encode'
+      - 'perl-Class-Std'
+      - 'perl-IO-Compress'
+      - 'perl-Date-Manip'
+      - 'perl-XML-Simple'
+      - 'perl-Archive-Zip'
+      - 'perl-XML-XPath'
+      - 'perl-Compress-Raw-Zlib'
+      - 'perl-Term-ReadLine'
+      - 'perl-LWP-Protocol-https'
+      - 'perl-JSON-PP'
+      - 'perl-String-ShellQuote'
+      - 'perl-CGI'
+      - 'perl-Parse-RecDescent'
+      - 'foomatic'
+      - 'freetds'
+      - 'freetds-devel'
+
+  - name: Configure required services to start automatically
+    service:
+      name: "{{ item }}"
+      state: started
+      enabled: yes
+    loop:
+    - cups
+    - httpd
+    - nmb
+    - sendmail
+    - smb
+    - vsftpd
+
+  - name: Configure FTP server
+    ini_file:
+      path: /etc/vsftpd.conf
+      section: null
+      no_extra_spaces: yes
+      option: "{{ item.split(':')[0] }}"
+      value: "{{ item.split(':')[1] }}"
+    loop:
+    - local_umask:002
+    - write_enable:yes
+    notify: Restart FTP server
+
+  - name: Add firewall rules
+    firewalld:
+      service: "{{ item }}"
+      state: enabled
+      immediate: yes
+      permanent: yes
+    loop:
+    - ftp
+    - http
+
+  - name: Change ImageMagick policy XML 1/4
+    xml:
+      path: "/etc/ImageMagick-6/policy.xml"
+      xpath: '/policymap/policy[@pattern="TEXT"]'
+      state: present
+      attribute: domain
+      value: coder
+      pretty_print: yes
+
+  - name: Change ImageMagick policy XML 2/4
+    xml:
+      path: "/etc/ImageMagick-6/policy.xml"
+      xpath: '/policymap/policy[@pattern="TEXT"]'
+      state: present
+      attribute: rights
+      value: read
+      pretty_print: yes
+
+  - name: Change ImageMagick policy XML 3/4
+    xml:
+      path: "/etc/ImageMagick-6/policy.xml"
+      xpath: '/policymap/policy[@pattern="LABEL"]'
+      state: present
+      attribute: domain
+      value: coder
+      pretty_print: yes
+
+  - name: Change ImageMagick policy XML 4/4
+    xml:
+      path: "/etc/ImageMagick-6/policy.xml"
+      xpath: '/policymap/policy[@pattern="LABEL"]'
+      state: present
+      attribute: rights
+      value: read
+      pretty_print: yes
+
+  - name: Enable Code Ready Linux Builder (CRB) (Was PowerTools)
+    yum_repository:
+      name: "{{ powertoolsreponame }}"
+      file: "centos"
+      description: "CentOS Stream $releasever - CRB"
+      metalink: "https://mirrors.centos.org/metalink?repo=centos-crb-$stream&arch=$basearch&protocol=https,http"
+      gpgkey: "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial"
+      gpgcheck: yes
+      repo_gpgcheck: no
+      metadata_expire: "6h"
+      enabled: yes
+
+  - name: Install packages from Code Ready Linux Builder (was PowerTools)
+    yum:
+      name:
+      - gperf.x86_64
+      - gsm-devel.x86_64
+      - jbigkit-devel.x86_64
+      - latex2html.noarch
+      - lcms2-devel.x86_64
+      - libtiff-tools.x86_64
+#      - libv41-devel.x86_64
+      - lockdev-devel.x86_64
+      - perl-IPC-Run3.noarch
+      - perl-Unicode-EastAsianWidth.noarch
+#      - pygobject3-devel.x86_64
+      - sharutils.x86_64
+#      - text2html.noarch
+      - texinfo.x86_64
+      - texinfo-tex.x86_64
+      state: latest
+
+  - name: install cpan modules
+    cpanm:
+      name: "{{ item }}"
+      notest: yes
+    environment:
+      SYBASE: '/usr'
+    loop:
+    - 'Any::Daemon'
+    - 'Class::Std::Fast'
+    - 'DBD::Sybase'
+    - 'IO::Pty'
+    - 'IO::Tty'
+    - 'List::MoreUtils'
+    - 'Log::LogLite'
+    - 'Log::Report'
+    - 'Mail::POP3Client'
+    - 'MIME::Lite'
+    - 'Net::Azure::StorageClient'
+    - 'Net::FTP::Common'
+    - 'Net::LDAP'
+    - 'Net::SFTP::Foreign'
+    - 'Params::Validate'
+    - 'Params::Validate::Checks'
+    - 'SOAP::WSDL'
+    - 'Term::ReadKey'
+    - 'Test::Pod'
+    - 'URI::sftp'
+    - 'XML::Compile::SOAP::Daemon::AnyDaemon'
+    - 'XML::Tidy'
+
+...
