@@ -64,7 +64,7 @@
       path: /var/lib/pgsql/data
 
   - name: Create fake init.d file
-    # This is required for 2005091601 to work correctly.
+    # This is required for sysupdate 2005091601 to work correctly.
     file:
       path: /etc/rc.d/init.d/postgresql
       state: touch

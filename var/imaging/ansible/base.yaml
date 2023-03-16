@@ -90,10 +90,4 @@
       value: disabled
       no_extra_spaces: yes
 
-# CentOS 8 has python3-psycopg2 bound to python 3.6, even though the default is 3.9
-# CentOS 9 has python3-psycopg2 bound to python 3.9, even though the default is 3.11
-# dm.yaml needs psycopg2, and was setting ansible_python_interpreter
-# but it can't set the version dynamically.
-# So we will set it here, because base.yaml doesn't need it set
-
 ...

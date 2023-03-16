@@ -19,7 +19,8 @@ set -o errexit
 #  - This script assumes that it is running as root, and
 #      running in /root
 
-OVERLAY=https://github.com/BlacksilverConsulting/ImgOverlay/raw/main
+REPO=https://github.com/BlacksilverConsulting/ImgOverlay/raw/main
+REPO_PATH=var/imaging/resources/ansible
 
 echo 'Enable EPEL'
 dnf -y install epel-release epel-next-release
@@ -30,10 +31,13 @@ dnf -y install python3 python3-rpm python3-pycurl sshpass ansible-core \
 ansible-collection-ansible-posix ansible-collection-community-general \
 ansible-collection-redhat-rhel_mgmt 
 
+# Check Ansible install and get OS major
+MAJOR=`ansible localhost -m setup | tail -c +23 | jq -r .ansible_facts.ansible_distribution_major_version`
+
 echo 'Download the playbooks to current directory'
-curl -LJO $OVERLAY/var/imaging/resources/ansible/base.yaml
-curl -LJO $OVERLAY/var/imaging/resources/ansible/pg14.yaml
-curl -LJO $OVERLAY/var/imaging/resources/ansible/dm.yaml
+curl -LJO $REPO/$REPO_PATH/base.yaml
+curl -LJO $REPO/$REPO_PATH/pg14.yaml
+curl -LJO $REPO/$REPO_PATH/dm-${MAJOR}.yaml
 
 echo 'Run the base playbook'
 ansible-playbook ./base.yaml
@@ -45,4 +49,4 @@ echo 'ansible-playbook ./pg14.yaml'
 
 echo 'To install other components useful for document management:'
 echo '(assumes PostgreSQL is already installed)'
-echo 'ansible-playbook ./dm.yaml'
+echo 'ansible-playbook ./dm-${MAJOR}.yaml'
