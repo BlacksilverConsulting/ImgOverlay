@@ -251,18 +251,17 @@
     yum:
       name:
       - gperf.x86_64
+      - groff
+      - groff-base
       - gsm-devel.x86_64
       - jbigkit-devel.x86_64
       - latex2html.noarch
       - lcms2-devel.x86_64
       - libtiff-tools.x86_64
-#      - libv41-devel.x86_64
       - lockdev-devel.x86_64
       - perl-IPC-Run3.noarch
       - perl-Unicode-EastAsianWidth.noarch
-#      - pygobject3-devel.x86_64
       - sharutils.x86_64
-#      - text2html.noarch
       - texinfo.x86_64
       - texinfo-tex.x86_64
       state: latest
@@ -357,7 +356,7 @@
     yum:
       name:
       - "{{overlay_rpms}}/a2ps-4.14-23.el8.x86_64.rpm"
-      - "{{overlay_rpms}}/groff-base-1.22.3-18.el8.x86_64.rpm"
+     # - "{{overlay_rpms}}/groff-base-1.22.3-18.el8.x86_64.rpm"
       - "{{overlay_rpms}}/groff-perl-1.22.3-18.el8.x86_64.rpm"
       state: present
 
