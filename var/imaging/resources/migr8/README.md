@@ -1,7 +1,7 @@
 # Img Application Migration Tool 
 
 Process for moving a specific application to a new host running 
-(RHEL / CentOS 9)[https://github.com/BlacksilverConsulting/OS9] or (RHEL / CentOS 8)[https://github.com/BlacksilverConsulting/OS8].
+[RHEL / CentOS 9](https://github.com/BlacksilverConsulting/OS9) or [RHEL / CentOS 8](https://github.com/BlacksilverConsulting/OS8).
 
 Enter these commands on the existing host to package the application for migration:
 
@@ -36,9 +36,9 @@ If you want to verify that you have the correct directory, you can check for the
 
 When the application was shipped by the original vendor (before it was abandoned), they used a script to generate a compressed archive file (.tgz). This process is similar, but starts with the running application on an installed system instead of a private repository.
 
-The (img-migr8-excludes)[https://github.com/BlacksilverConsulting/ImgOverlay/raw/main/var/imaging/resources/migr8/img-migr8-excludes] file is used to skip over files that may have accumulated on the existing server but do not need to be copied (.trash., mostly). It also omits support libraries that are installed by [dm.yaml](https://github.com/BlacksilverConsulting/OS9/blob/main/dm.yaml).
+The [img-migr8-excludes](https://github.com/BlacksilverConsulting/ImgOverlay/raw/main/var/imaging/resources/migr8/img-migr8-excludes) file is used to skip over files that may have accumulated on the existing server but do not need to be copied (.trash., mostly). It also omits support libraries that are installed by [dm.yaml](https://github.com/BlacksilverConsulting/OS9/blob/main/dm.yaml).
 
-The (img-migr8-includes)[https://github.com/BlacksilverConsulting/ImgOverlay/raw/main/var/imaging/resources/migr8/img-migr8-includes] file is a list of directories and specific files that should be included. The `tar` command does not support globbing (wildcard shell expansion) in this file, so the paths that need globbing are included on the command line separately.
+The [img-migr8-includes](https://github.com/BlacksilverConsulting/ImgOverlay/raw/main/var/imaging/resources/migr8/img-migr8-includes) file is a list of directories and specific files that should be included. The `tar` command does not support globbing (wildcard shell expansion) in this file, so the paths that need globbing are included on the command line separately.
 
 This command should generally run very quickly (completion in less than 10 seconds on a typical system), and generate a file of about 15MB.
 
