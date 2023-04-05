@@ -41,7 +41,3 @@ The [img-migr8-excludes](https://github.com/BlacksilverConsulting/ImgOverlay/raw
 The [img-migr8-includes](https://github.com/BlacksilverConsulting/ImgOverlay/raw/main/var/imaging/resources/migr8/img-migr8-includes) file is a list of directories and specific files that should be included. The `tar` command does not support globbing (wildcard shell expansion) in this file, so the paths that need globbing are included on the command line separately.
 
 This command should generally run very quickly (completion in less than 10 seconds on a typical system), and generate a file of about 15MB.
-
-## TODO
-
-- Add instructions for moving the application database
