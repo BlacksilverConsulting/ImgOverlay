@@ -1,0 +1,5 @@
+var/www/html/apf_3.02_sdk
+var/www/html/reject
+var/www/html/yui
+var/imaging/www/reject
+.trash.*
