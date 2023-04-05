@@ -41,3 +41,20 @@ The [img-migr8-excludes](https://github.com/BlacksilverConsulting/ImgOverlay/raw
 The [img-migr8-includes](https://github.com/BlacksilverConsulting/ImgOverlay/raw/main/var/imaging/resources/migr8/img-migr8-includes) file is a list of directories and specific files that should be included. The `tar` command does not support globbing (wildcard shell expansion) in this file, so the paths that need globbing are included on the command line separately.
 
 This command should generally run very quickly (completion in less than 10 seconds on a typical system), and generate a file of about 15MB.
+
+## Database Migration
+
+If you also need to move the application database from the old host to a new one, run this command on the old host:
+
+`su - postgres -c "pg_dump images | gzip > /tmp/img-migr8.dump.gz`
+
+After you transfer the file to the new host, you can restore it like this:
+
+`su - postgres -c "createdb images"`
+`su - postgres -c "gunzip /tmp/img-migr8.dump.gz | psql images`
+
+If the `createdb` command fails because the database already exists, you can delete it like this:
+
+`su - postgres -c "dropdb images"`
+
+Restore time will vary **widely** depending on many factors.
