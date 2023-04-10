@@ -1,5 +1,4 @@
 --- /var/imaging/bin/sysupdate/0000000000.pl    2021-02-19 15:52:37.000000000 -0500
-+++ /var/imaging/bin/sysupdate/0000000000.pl.new        2023-04-09 23:49:10.583848199 -0400
 @@ -376,55 +376,3 @@
      print "UPDATE: Chowned $sfile to $user.imaging\n";
  }
