@@ -1,0 +1,58 @@
+--- /var/imaging/bin/sysupdate/0000000000.pl    2021-02-19 15:52:37.000000000 -0500
++++ /var/imaging/bin/sysupdate/0000000000.pl.new        2023-04-09 23:49:10.583848199 -0400
+@@ -376,55 +376,3 @@
+     print "UPDATE: Chowned $sfile to $user.imaging\n";
+ }
+
+-if ( not exists $ENV{PGHOST} ) {
+-
+-    # Check: $PGDATA/data/postgresql.conf contains the line
+-    #   'shared_buffers=512'
+-    #   If this check fails, append the line
+-    # Scan the file
+-    my $fixflag   = 0;
+-    my $foundflag = 0;
+-    my @contents  = ();
+-    chomp ( my ( $PGDATA ) = qx{su postgres -c "psql -tAc 'SHOW data_directory'"} );
+-    my $conf      = "$PGDATA/postgresql.conf";
+-
+-    if ( !-e $conf ) {
+-        print
+-            "UPDATE: Restarting PostgreSQL to create configuration files...\n";
+-        print `service postgresql restart`;
+-    }
+-    else {
+-        print "INFO: PostgreSQL configuration exists.\n";
+-    }
+-    my $setting = 'shared_buffers';
+-    open my $fh, '<', $conf
+-        or failout "Can't open $conf: $OS_ERROR";
+-    my @pgfile = <$fh>;
+-    close $fh;
+-    for my $line (@pgfile) {
+-        if ( $line =~ /^\s*$setting\s*\=\s*(\S+)/i ) {
+-            my $set = $1;
+-            print "INFO: Found $line";
+-            $foundflag = 1;
+-            $fixflag   = ( ( $set =~ /^\d+$/ ) and ( $set < 512 ) );
+-            $line      = "$setting=512\n";
+-        }
+-        push @contents, $line;
+-    }
+-
+-    #print "DEBUG: Attempting Fix\n";
+-    failout "$conf must be fixed manually, set shared_buffers=512"
+-        unless not $fixflag;
+-
+-    # make backup of file
+-    # write file from @contents
+-
+-    if ( not $foundflag ) {
+-        open my $fh, ">>", $conf;
+-        print $fh "$setting = 512\n";
+-        close $fh;
+-        print "UPDATE: Added $setting to $conf\n";
+-        $fixflag = 1;
+-    }
+-}
+-
