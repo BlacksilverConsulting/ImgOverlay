@@ -16,3 +16,4 @@
      if ( not email_import_lock $account_sequence) {
          logx "Didn't get a lock on [$account_sequence], skipping", 5;
          next ACCOUNT;
+         
