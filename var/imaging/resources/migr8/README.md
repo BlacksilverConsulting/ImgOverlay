@@ -20,13 +20,15 @@ Move the /tmp/img-migr8.tgz file to the /tmp directory on the new host, then run
 # This assumes the pg14.yaml and dm.yaml playbooks have already been run
 # ( https://github.com/BlacksilverConsulting/OS9 )
 tar zxf /tmp/img-migr8.tgz -C /
+# TODO: Need to apply patches from ImgOverlay here, or sysupdate.pl won't finish.
+# This is also a good time to apply the tess.yaml playbook if that's your thing.
 sysupdate.pl
 service imaging-listener restart
 ```
 
 ## Note
 
-If you are migrating from a mounted drive, rather than root, you will need to alter the `cd /` part of the command above to change to the directory that is at the root of the copy of the application you want to migrate.
+If you are migrating from a mounted drive, rather than root, you will need to alter the `cd /` part of the command that creates the compressed archive to change to the directory that is at the root of the copy of the application you want to migrate. For example, if you have mounted an LVM snapshot of the old root at `/mnt/lv_root`, then you should `cd /mnt/lv_root` before running the `tar czpf ...` command.
 
 If you want to verify that you have the correct directory, you can check for the file var/imaging/resources/amanda.txt, which has been present and unchanged since early 2012. For example, if you have mounted the drive containing the application at /mnt/lv_root, you could check for the file like this:
 
@@ -40,7 +42,7 @@ The [img-migr8-excludes](https://github.com/BlacksilverConsulting/ImgOverlay/raw
 
 The [img-migr8-includes](https://github.com/BlacksilverConsulting/ImgOverlay/raw/main/var/imaging/resources/migr8/img-migr8-includes) file is a list of directories and specific files that should be included. The `tar` command does not support globbing (wildcard shell expansion) in this file, so the paths that need globbing are included on the command line separately.
 
-This command should generally run very quickly (completion in less than 10 seconds on a typical system), and generate a file of about 15MB.
+The command to create the migration file should run very quickly (completion in less than 10 seconds on a typical system), and generate a file of about 15MB.
 
 ## Database Migration
 
