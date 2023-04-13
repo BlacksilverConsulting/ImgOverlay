@@ -1,0 +1,19 @@
+--- /var/imaging/subsys/Templates/setupdb/2015071201.pl 2023-04-12 22:14:57.679937783 -0400
++++ -   2023-04-12 22:32:41.717922052 -0400
+@@ -34,11 +34,11 @@
+
+     my @recs = (
+
+-        [   230, 'Templating', 'Minimum reference count for generation',
+-            '40', 'Y'
+-        ],
+-        [ 231, 'Templating', 'Minimum key zones for generation', '20', 'Y' ],
+-        [ 232, 'Templating', 'Allowed variance (millipoints)', '9000', 'Y' ]
++        [  230, 'Templating', 'Minimum reference count for generation', '40',   'Y' ],
++        [  231, 'Templating', 'Minimum key zones for generation',       '20',   'Y' ],
++        [  232, 'Templating', 'Allowed variance (millipoints)',         '9000', 'Y' ],
++        [ 1241, 'Templating', 'Auto-commit divisions',                  '',     'Y' ]
++
+     );
+
+     foreach my $rec (@recs) {
