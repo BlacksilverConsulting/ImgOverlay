@@ -20,9 +20,13 @@ Move the /tmp/img-migr8.tgz file to the /tmp directory on the new host, then run
 # This assumes the pg14.yaml and dm.yaml playbooks have already been run
 # ( https://github.com/BlacksilverConsulting/OS9 )
 tar zxf /tmp/img-migr8.tgz -C /
-# TODO: Need to apply patches from ImgOverlay here, or sysupdate.pl won't finish.
-# This is also a good time to apply the tess.yaml playbook if that's your thing.
+# The next line patches the application to work with modern OSes
+for p in /root/ImgOverlay-main/var/imaging/patches/*.patch; do ( cd / && patch -p0 -N -r- -i $p ); done
+# This is also a good time to apply the tess.yaml playbook if that's your thing:
+ansible-playbook ~/tess.yaml
+# The is the system configuration script for the application:
 sysupdate.pl
+# This is the application's background service for file and queue processing:
 service imaging-listener restart
 ```
 
