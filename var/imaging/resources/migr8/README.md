@@ -11,7 +11,7 @@ Enter these commands on the existing host to package the application for migrati
 # Download the inclusion list
 ( cd /tmp && wget https://github.com/BlacksilverConsulting/ImgOverlay/raw/main/var/imaging/resources/migr8/img-migr8-includes )
 # Create the compressed archive (see note below)
-( cd / && tar czpf /tmp/img-migr8.tgz -X /tmp/img-migr8-excludes -T /tmp/img-migr8-includes usr/bin/img-* var/www/html/img-* )
+( cd / && tar chzpf /tmp/img-migr8.tgz -X /tmp/img-migr8-excludes -T /tmp/img-migr8-includes usr/bin/img-* var/www/html/img-* )
 ```
 
 Move the /tmp/img-migr8.tgz file to the /tmp directory on the new host, then run these commands on the new host to set up the application:
@@ -33,7 +33,7 @@ service imaging-listener restart
 
 ## Note
 
-If you are migrating from a mounted drive, rather than root, you will need to alter the `cd /` part of the command that creates the compressed archive to change to the directory that is at the root of the copy of the application you want to migrate. For example, if you have mounted an LVM snapshot of the old root at `/mnt/lv_root`, then you should `cd /mnt/lv_root` before running the `tar czpf ...` command.
+If you are migrating from a mounted drive, rather than root, you will need to alter the `cd /` part of the command that creates the compressed archive to change to the directory that is at the root of the copy of the application you want to migrate. For example, if you have mounted an LVM snapshot of the old root at `/mnt/lv_root`, then you should `cd /mnt/lv_root` before running the `tar chzpf ...` command. The error `tar: var/www/html/images: File removed before we read it` can be ignored, that symlink will be fixed later.
 
 If you want to verify that you have the correct directory, you can check for the file var/imaging/resources/amanda.txt, which has been present and unchanged since early 2012. For example, if you have mounted the drive containing the application at /mnt/lv_root, you could check for the file like this:
 
@@ -51,9 +51,15 @@ The command to create the migration file should run very quickly (completion in 
 
 ## Database Migration
 
-If you also need to move the application database from the old host to a new one, run this command on the old host:
+If you also need to move the application database from the old host to a new one, run this command on the old host to make a copy of the live database:
 
 `su - postgres -c "pg_dump images | gzip > /tmp/img-migr8.dump.gz`
+
+If you are migrating from a system that is not live (mounted), and you did not specifically take a backup while it was running, you can copy the last daily automatic backup:
+
+`cp /mnt/lv_root/home/backup/images-daily.dump.gz /tmp/img-migr8.dump.gz`
+
+(As above, alter the source path to match your circumstances. This example shows the old system mounted at `/mnt/lv_root`.)
 
 After you transfer the file to the new host, you can restore it like this:
 
