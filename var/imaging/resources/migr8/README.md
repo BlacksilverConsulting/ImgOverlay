@@ -65,7 +65,7 @@ After you transfer the file to the new host, you can restore it like this:
 
 `su - postgres -c "createdb images"`
 
-`su - postgres -c "gunzip /tmp/img-migr8.dump.gz | psql images"`
+`su - postgres -c "gunzip -c /tmp/img-migr8.dump.gz | psql images"`
 
 If the `createdb` command fails because the database already exists, you can delete it like this:
 
