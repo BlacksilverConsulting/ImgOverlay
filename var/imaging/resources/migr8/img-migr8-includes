@@ -47,4 +47,5 @@ usr/images/icons
 usr/local/etc/freetds.conf
 usr/local/etc/amanda/ImgSrv/disklist.tmpl
 var/imaging
+var/www/cgi-bin
 var/www/html
