@@ -1,0 +1,31 @@
+--- /var/imaging/bin/img-sysinfo.pl     2023-04-21 21:19:09.374822333 -0400
++++ -   2023-04-21 21:36:40.329900243 -0400
+@@ -15,6 +15,7 @@
+ use lib "/var/imaging/lib";
+ use TmwDB qw(:all);
+ use TmwDispatch;
++use Tmw qw(:all);
+
+ my $dbh = undef;
+
+@@ -84,9 +85,10 @@
+
+ sub sys_welcome {
+     my $version = getsysparm( 'System', 'Imaging Version' );
+-    my $osversion = `lsb_release -d`;
++    my ( $osversion ) = grep {/PRETTY_NAME/} f2a( '/etc/os-release' );
++    $osversion =~ s/PRETTY_NAME="(.+)"/$1/;
+     chomp $osversion;
+-    $osversion =~ s/^Description:\s+//s;
++
+     print
+         "\nThis server is running Trimble Imaging version $bold$version$normal\n on $bold$osversion$normal.\n";
+
+@@ -105,7 +107,7 @@
+ sub sys_pagecount {
+
+     my $command
+-        = q{psql images -t -c "SELECT substring(rdt_result from '[0-9]+') || ' documents' };
++        = q{psql images --no-psqlrc -t -c "SELECT substring(rdt_result from '[0-9]+') || ' documents' };
+     $command
+         .= q{AS Documents FROM mon_RunDetail WHERE tst_Code = 'IMG-PAGES' ORDER BY run_Sequence DESC LIMIT 1;"};
