@@ -3,7 +3,7 @@ SELECT
 FROM
   img_UnkGroup
 WHERE
-  ugr_Divison = ANY( ?::TEXT[] )
+  ugr_Division = ANY( ?::TEXT[] )
 ORDER BY
   ugr_Division,
   ugr_GroupNum
