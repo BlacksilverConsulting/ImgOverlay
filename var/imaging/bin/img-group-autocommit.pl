@@ -65,7 +65,7 @@ if ( $pgany_divs !~ /\w/ ) {
     exit 0;
 }
 
-my ( @grouprows ) = flatten list st( 'GetGroupsByDivisions', $pgany_divs );
+my @grouprows = flatten st( 'GetGroupsByDivisions', $pgany_divs );
 my $count = 0;
 
 for my $groupnum ( @grouprows ) {
