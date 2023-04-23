@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 use English;
-use v5.34;
+use v5.32;
 
 =pod
 
