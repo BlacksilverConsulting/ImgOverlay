@@ -37,7 +37,7 @@ die "Can't connect to database!"
 my $_loglevel = getsysparm( "System", "Logging Level" ) || 6;
 my $_log      = Log::LogLite->new( '/var/log/listener', $_loglevel )
     or die "Can't open Log::LogLite";
-$_log->default_message("($PID): ");
+$_log->default_message("$PROGRAM_NAME ($PID): ");
 my @_log_prefix = (
     'PANIC', 'FAILURE', 'CRITICAL', 'ERROR', 'WARNING', 'NOTICE',
     'INFO',  'DEBUG',   'DEBUG',    'DEBUG', 'DEBUG'
@@ -69,13 +69,13 @@ my @grouprows = flatten st( 'GetGroupsByDivisions', $pgany_divs );
 my $count = 0;
 
 for my $groupnum ( @grouprows ) {
-  my $unkgrp = TmwUnkGroup->load($groupnum);
-  if ( $unkgrp->errstr ) { 
+  my $unkgrp = TmwUnkGroup->load( GROUP => $groupnum );
+  if ( $unkgrp->{errstr} ) { 
     logx 4, "Failed to load group [$groupnum]: " . $unkgrp->error;
     next;
   }
-  $unkgrp->commit();
-  if ( $unkgrp->errstr ) { 
+  $unkgrp->Commit();
+  if ( $unkgrp->{errstr} ) { 
     logx 4, "Failed to commit group [$groupnum]: " . $unkgrp->error;
   }
   $count++;
