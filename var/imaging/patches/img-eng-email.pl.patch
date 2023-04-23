@@ -1,4 +1,5 @@
---- /usr/bin/img-eng-email.pl
+--- /usr/bin/img-eng-email.pl   2023-04-22 21:18:21.639320831 -0400
++++ -   2023-04-22 21:19:32.527891313 -0400
 @@ -220,6 +220,16 @@
 
      my $account_options  = $account_row->[4];
@@ -16,4 +17,3 @@
      if ( not email_import_lock $account_sequence) {
          logx "Didn't get a lock on [$account_sequence], skipping", 5;
          next ACCOUNT;
-         
