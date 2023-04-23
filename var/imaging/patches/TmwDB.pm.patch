@@ -1,0 +1,62 @@
+--- /var/imaging/lib/TmwDB.pm   2021-03-09 16:51:20.000000000 -0500
++++ -   2023-04-22 21:05:37.016703079 -0400
+@@ -5795,43 +5795,31 @@
+
+     _prepare( $statement_name ) or return;
+
+-Attempts to prepare $statement_name from $sqldir. Sets $errstr on failure.
++Attempts to prepare $statement_name from $sqldir or %st_raw.
+
+ Private function; should not be called outside TmwDB.
+
+-Returns true on success.
++Returns true on success; returns false and sets $errstr on failure.
+
+ =cut
+
+ sub _prepare {
+-    my ($statement_name) = @_;
++    my ( $statement_name ) = @_;
+
+-    if ( not exists $st{$statement_name} ) {
+-        my $sql_file = $sqldir . $statement_name;
++    # Bail if this was already done:
++    return 1 if exists $st{ $statement_name };
+
+-        # if ( ! -e $sql_file ) {
+-        #     $errstr = "Missing SQL file [$sql_file]";
+-        #     return;
+-        # }
+-        # my $raw_sql = join '', f2a $sql_file;
+-        # if ( not length $raw_sql ) {
+-        #     $errstr = "Can't read SQL file [$sql_file]";
+-        #     return;
+-        # }
+-        # if ( not $st{$statement_name} = $dbh->prepare( $raw_sql ) ) {
+-        #     $errstr = $statement_name . ': ' . chomp $dbh->errstr;
+-        #     return;
+-        # }
+-        if ( not exists $st_raw{$statement_name} ) {
+-            $errstr = "Missing SQL for [$statement_name]";
+-            return;
+-        }
+-        if ( not $st{$statement_name}
+-            = $dbh->prepare( $st_raw{$statement_name} ) )
+-        {
+-            $errstr = $statement_name . ': ' . chomp $dbh->errstr;
+-            return;
+-        }
++    my $raw_sql = $st_raw{ $statement_name };
++
++    # Files take precedence over hash:
++    my $sql_file = $sqldir . $statement_name;
++    if ( -e $sql_file ) {
++        $raw_sql = join '', f2a $sql_file;
++    }
++
++    if ( not $st{$statement_name} = $dbh->prepare( $raw_sql ) ) {
++        $errstr = $statement_name . ': ' . chomp $dbh->errstr;
++        return;
+     }
+
+     return 1;
