@@ -57,7 +57,7 @@ The command to create the migration file should run very quickly (completion in 
 
 If you also need to move the application database from the old host to a new one, run this command on the old host to make a copy of the live database:
 
-`su - postgres -c "pg_dump images | gzip > /tmp/img-migr8.dump.gz`
+`su - postgres -c "pg_dump images | gzip > /tmp/img-migr8.dump.gz"`
 
 If you are migrating from a system that is not live (mounted), and you did not specifically take a backup while it was running, you can copy the last daily automatic backup:
 
