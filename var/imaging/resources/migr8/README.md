@@ -86,6 +86,8 @@ for i in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
   for j in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
     echo `date`: Migrate partition $i$j
     cp -prv /mnt/data/lv_data/images/$i$j /usr/images
+    # Assumes SSH trust is already set up:
+    # rsync -progv /usr/images/$i$j root@newhost:/usr/images
   done
 done
 ```
