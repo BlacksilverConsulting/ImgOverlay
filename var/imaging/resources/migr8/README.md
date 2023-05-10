@@ -29,7 +29,7 @@ If you want to verify that you have the correct directory, you can check for the
 Move the /tmp/img-migr8.tgz file to the /tmp directory on the new host, then run these commands on the new host to set up the application:
 
 ```
-# This assumes the pg14.yaml and dm.yaml playbooks have already been run
+# This assumes the pg1[04].yaml and dm.yaml playbooks have already been run
 # ( https://github.com/BlacksilverConsulting/OS9 )
 tar zxf /tmp/img-migr8.tgz -C /
 # The next line patches the application to work with modern OSes
@@ -38,7 +38,7 @@ for p in /root/ImgOverlay-main/var/imaging/patches/*.patch; do ( cd / && patch -
 ansible-playbook ~/tess.yaml
 # NOTE: If you have not yet initialized CPAN on this machine, do it now or the next command will hang until you press Enter unprompted.
 # The is the system configuration script for the application:
-sysupdate.pl
+sysupdate.pl force
 # This is the application's background service for file and queue processing:
 service imaging-listener restart
 ```
@@ -67,19 +67,19 @@ If you are migrating from a system that is not live (mounted), and you did not s
 
 After you transfer the file to the new host, you can restore it like this:
 
-`su - postgres -c "createdb images"`
+`su - postgres -c "createdb images;"`
 
 `su - postgres -c "gunzip -c /tmp/img-migr8.dump.gz | psql images"`
 
 If the `createdb` command fails because the database already exists, you can delete it like this:
 
-`su - postgres -c "dropdb images"`
+`su - postgres -c "dropdb images;"`
 
 Restore time will vary **widely** depending on many factors. Some of the individual steps within the restore process can take minutes to complete.
 
 ## Document File Migration
 
-The application database does not contain the document files; the are stored in the file system, usually at `/usr/images`. Teh directory structure divides the eight-character (hexadecimal) document ID into four groups (octets) of two characters each. The first three groups are used as directory names, and the last group is the base file name. For example, if document 12345678 is a TIFF file, it will be at `/usr/images/12/34/56/78.tif`. This deep structure (up to 16.7 million directories) is very efficient for normal operations, but can run into memory limitations during migration operations. To address this, divide the operation into smaller chunks. For example, this will copy all of the documents from `/mnt/data/lv_data/images`:
+The application database does not contain the document files; the are stored in the file system, usually at `/usr/images`. The directory structure divides the eight-character (hexadecimal) document ID into four groups (octets) of two characters each. The first three groups are used as directory names, and the last group is the base file name. For example, if document 12345678 is a TIFF file, it will be at `/usr/images/12/34/56/78.tif`. This deep structure (up to 16.7 million directories) is very efficient for normal operations, but can run into memory limitations during migration operations. To address this, divide the operation into smaller chunks. For example, this will copy all of the documents from `/mnt/data/lv_data/images`:
 
 ```
 for i in 0 1 2 3 4 5 6 7 8 9 a b c d e f; do
