@@ -16,6 +16,7 @@ use Tmw qw(:all);
 
 =head1 NAME
 img-eng-email-o365.pl -- E-Mail Import Message retriever for Outlook365+OAuth2
+
 =head1 DESCRIPTION
 Retrieve messages from POP3 accounts and drop them in /home/mailer/X
 for further processing, where X is the cnf_Email_Import.cei_Sequence
@@ -25,8 +26,10 @@ duplication.
 Messages are processed by a different program, img-eng-email-proc.pl.
 Unlike most other engines, this does not run as listener, and it is not
 lauched by img-listloop.
+
 =head1 INVOCATION
 Invoked by a scheduled task (cron job) for user 'mailer'.
+
 =head1 PARAMETERS
 Mostly cnf_Email_Import, some img_Setting.
 The first command line parameter must contain only digits, and match a
@@ -37,14 +40,15 @@ For example, if the parameter value is "23", then messages will be
 written to files in /home/mailer/23/, the OAuth2 configuration will be
 read from /home/mailer/.o365/23-config.json, and the token will be
 kept in /home/mailer/.o365/23-token.json
+
 =head1 OAUTH2
 OAuth2 configuration is a beast. This program does not generate either of
 the JSON files mentioned above. It will update the access_token upon
 successful refresh, which is attempted every time the program runs.
+
 =head1 CHILKAT
 This program requires the chilkat utlity library. Deal.
-=head1 VERSION
-$Id$
+
 =cut
 
 my $_loglevel = getsysparm( "System", "Logging Level" ) || 6;
@@ -79,14 +83,14 @@ logx 10, "Starting $PROGRAM_NAME";
 my $oauth2 = chilkat::CkOAuth2->new();
 
 if (not length $ARGV[0] ) {
-    print "Missing sequence parameter.\n";
+    logx 1, "Missing sequence parameter.\n";
     exit;
 }
 
 my $sequence = $ARGV[0];
 if ( $sequence !~ /^[0-9]+$/ ) {
     # Match only digits, leave only integers
-    print "Invalid sequence parameter.\n";
+    logx 2, "Invalid sequence parameter.\n";
     exit;
 }
 
@@ -95,10 +99,10 @@ my $jsonConfig = chilkat::CkJsonObject->new();
 my $config_file_name = "$o365_dir/$sequence-config.json";
 $success = $jsonConfig->LoadFile($config_file_name);
 if ($success != 1) {
-    print "Failed to load config file [$config_file_name]\n";
+    logx 2, "Failed to load config file [$config_file_name]\n";
     exit;
 }
-print "AAD config loaded from [$config_file_name]\n";
+logx 6, "AAD config loaded from [$config_file_name]\n";
 
 my $url_base = "https://login.microsoftonline.com/";
 $oauth2->put_AuthorizationEndpoint( $url_base . $jsonConfig->stringOf("tenantId") . "/oauth2/v2.0/authorize" );
